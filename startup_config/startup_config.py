@@ -285,4 +285,5 @@ if __name__ == "__main__":
     L.log(repr(output))
 
     output = write_ntp_config(configuration.defined_config['network']['ntp_servers'])
-    L.log(repr(output))
+    for x in output:
+        L.log(repr(x))
