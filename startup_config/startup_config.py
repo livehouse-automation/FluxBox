@@ -226,7 +226,7 @@ def set_timezone(tz):
 
 
 def write_ntp_config(ntp_servers):
-    with open('/etc/ntp.conf') as f:
+    with open('/etc/ntp.conf', 'w') as f:
         f.write("driftfile /var/lib/ntp/ntp.drift\n")
         f.write("leapfile /usr/share/zoneinfo/leap-seconds.list\n")
         f.write("statistics loopstats peerstats clockstats\n")
