@@ -116,7 +116,13 @@ class LiveHouseBrickConfig(object):
             elif item == 'ipv4_gateway': return self.check_valid_ipv4_address
             elif item == 'dns_method': return self.check_valid_ipv4_method
             elif item == 'dns_servers': return self.check_valid_dns_servers
+            elif item == 'ntp_servers': return self.check_valid_ntp_servers
 
+            
+    def check_valid_ntp_servers(self, serverlist):
+        # check validity of each server
+        return all(self.check_valid_hostname(x) for x in serverlist.replace(' ','').split(','))
+    
     
     def check_valid_dns_servers(self, serverlist):
         # check validity of each server
