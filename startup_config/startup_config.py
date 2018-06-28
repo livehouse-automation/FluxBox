@@ -230,6 +230,8 @@ def set_timezone(tz):
 
 
 def write_ntp_config(ntp_servers):
+    output = list()
+    output.append(subprocess.run(["service", "ntp", "stop"], stdout=subprocess.PIPE))
     with open('/etc/ntp.conf', 'w') as f:
         f.write("driftfile /var/lib/ntp/ntp.drift\n")
         f.write("leapfile /usr/share/zoneinfo/leap-seconds.list\n")
@@ -239,12 +241,14 @@ def write_ntp_config(ntp_servers):
         f.write("filegen clockstats file clockstats type day enable\n")
         for s in ntp_servers.replace(' ','').split(','):
             f.write("pool %s iburst\n" % (s))
+            output.append(subprocess.run(["ntpdate", s], stdout=subprocess.PIPE))
         f.write("restrict -4 default kod notrap nomodify nopeer noquery limited\n")
         f.write("restrict -6 default kod notrap nomodify nopeer noquery limited\n")
         f.write("restrict 127.0.0.1\n")
         f.write("restrict ::1\n")
         f.write("restrict source notrap nomodify noquery\n")
-    return subprocess.run(["service", "ntp", "restart"], stdout=subprocess.PIPE)
+    output.append(subprocess.run(["service", "ntp", "start"], stdout=subprocess.PIPE))
+    return output
     
 
 
