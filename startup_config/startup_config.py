@@ -190,12 +190,12 @@ def set_interface_dhcp(interface):
     print(nmcli_output)
 
     
-def set_interface_static(interface, address, gateway, dns-servers, dns-search):
+def set_interface_static(interface, address, gateway, dns_servers, dns_search):
     c = get_connection_name(interface)
     output = list()
     output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.method", "manual"], stdout=subprocess.PIPE))
-    output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.dns", ' '.join(dns-servers)], stdout=subprocess.PIPE))
-    output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.dns-search", ' '.join(dns-search)], stdout=subprocess.PIPE))
+    output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.dns", ' '.join(dns_servers)], stdout=subprocess.PIPE))
+    output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.dns-search", ' '.join(dns_search)], stdout=subprocess.PIPE))
     output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.addresses", address], stdout=subprocess.PIPE))
     output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.gateway", gateway], stdout=subprocess.PIPE))
     return output
