@@ -114,7 +114,25 @@ class LiveHouseBrickConfig(object):
             elif item == 'ipv4_address': return self.check_valid_ipv4_address
             elif item == 'ipv4_netmask': return self.check_valid_ipv4_netmask
             elif item == 'ipv4_gateway': return self.check_valid_ipv4_address
+            elif item == 'dns_method': return self.check_valid_ipv4_method
+            elif item == 'dns_servers': return self.check_valid_dns_servers
 
+    
+    def check_valid_dns_servers(self, serverlist):
+        # check validity of each server
+        return all(self.check_valid_ipv4_address(x) for x in serverlist.replace(' ','').split(','))
+        
+            
+    def check_valid_hostname(self, hostname):
+        if len(hostname) > 255:
+            self.err = "hostname has longer than 255 characters"
+            return False
+        allowed = re.compile("(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
+        valid = all(allowed.match(x) for x in hostname.split("."))
+        if not valid:
+            self.err = "hostname has invalid characters; must only contain 'A-Z', 'a-z', '0-9', '-'; '.' allowed as separator"
+        return valid
+        
 
     def check_valid_ipv4_method(self, method):
         if method not in ('static', 'dhcp'):
@@ -137,19 +155,6 @@ class LiveHouseBrickConfig(object):
             x = ipaddress.IPv4Interface("%s/%s" % ('0.0.0.0', netmask))
         except ipaddress.NetmaskValueError as err:
             self.err = err
-            return False
-        return True
-            
-
-    def check_valid_hostname(self, hostname):
-        # make sure hostname length is greater than 0
-        if len(hostname) <= 0:
-            self.err = "hostname too short"
-            return False
-        # make sure hostname only contains A-Z, a-z, 0-9, "-"
-        m = re.search('^[a-zA-Z0-9\-]*$', hostname)
-        if not m:
-            self.err = "hostname has invalid characters, must only contains A-Z, a-z, 0-9, -"
             return False
         return True
 
