@@ -222,14 +222,14 @@ interface = 'eth0'
 # set ip
 if configuration.defined_config['network']['ipv4_method'] == 'dhcp':
     output = set_interface_dhcp(interface)
-    L.log(repr(output))
+    L.log(repr(x)) for x in output
 elif configuration.defined_config['network']['ipv4_method'] == 'static':
     output = set_interface_static(interface, 
                          configuration.defined_config['network']['ipv4_address'], 
                          configuration.defined_config['network']['ipv4_gateway'], 
                          configuration.defined_config['network']['dns_servers'], 
                          configuration.defined_config['network']['dns_search'])
-    L.log(repr(output))
+    L.log(repr(x)) for x in output
         
 # todo - start heartbeat LED
 # todo: do the heartbeat stuff in rc.local
