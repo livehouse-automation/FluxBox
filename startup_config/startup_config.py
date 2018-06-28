@@ -77,6 +77,7 @@ class LiveHouseBrickConfig(object):
         
 
     def process_section_item(self, section, item):
+        self.logger.log("Processing section '[%s]' item '%s'..." % (section, item))
 
         default_value = self.default_config[section][item]
 
