@@ -207,6 +207,14 @@ def set_interface_static(interface, address, gateway, dns_servers):
     output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.gateway", gateway], stdout=subprocess.PIPE))
     output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.method", "manual"], stdout=subprocess.PIPE))
     return output
+
+
+def flap_interface(interface):
+    c = get_connection_name(interface)
+    output = list()
+    output.append(subprocess.run(["nmcli", "-terse", "connection", "down", c], stdout=subprocess.PIPE))
+    output.append(subprocess.run(["nmcli", "-terse", "connection", "up", c], stdout=subprocess.PIPE))
+    return output
     
     
 def set_hostname(hostname):
@@ -238,6 +246,10 @@ elif configuration.defined_config['network']['ipv4_method'] == 'static':
                          configuration.defined_config['network']['dns_servers'])
     for x in output:
         L.log(repr(x))
+        
+output = flap_interface(interface)
+for x in output:
+    L.log(repr(x))
         
 # todo - start heartbeat LED
 # todo: do the heartbeat stuff in rc.local
