@@ -219,7 +219,10 @@ def flap_interface(interface):
     
 def set_hostname(hostname):
     return subprocess.run(["nmcli", "-terse", "general", "hostname", hostname], stdout=subprocess.PIPE)
-    
+
+
+def set_timezone(tz):
+    return subprocess.run(["timedatectl", "set-timezone", tz], stdout=subprocess.PIPE)
 
     
     
@@ -250,6 +253,9 @@ elif configuration.defined_config['network']['ipv4_method'] == 'static':
 output = flap_interface(interface)
 for x in output:
     L.log(repr(x))
+
+output = set_timezone(configuration.defined_config['system']['timezone'])
+L.log(repr(output))
         
 # todo - start heartbeat LED
 # todo: do the heartbeat stuff in rc.local
