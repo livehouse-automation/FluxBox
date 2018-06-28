@@ -11,9 +11,11 @@ import os
 
 class Logger(object):
     def __init__(self):
+        self.logfile = open('/media/boot/config.log', 'w')
         pass
     def log(self, text):
         print(text)
+        self.logfile.write("%s\n" % (text))
     def log_info(self,text):
         self.log(text)
     def log_error(self,text):
@@ -243,39 +245,38 @@ def write_ntp_config(ntp_servers):
     return subprocess.run(["service", "ntp", "restart"], stdout=subprocess.PIPE)
     
 
-# todo - stop heartbeat LED
-L = Logger()         
-configuration = LiveHouseBrickConfig("/media/boot/config.ini", L)
 
-# set hostname
-output = set_hostname(configuration.defined_config['system']['hostname'])
-L.log(repr(output))
 
-interface = 'eth0'
+if __name__ == "__main__":
 
-# set ip
-if configuration.defined_config['network']['ipv4_method'] == 'dhcp':
-    output = set_interface_dhcp(interface)
-    for x in output:
-        L.log(repr(x)) 
-elif configuration.defined_config['network']['ipv4_method'] == 'static':
-    output = set_interface_static(interface, 
-                         configuration.defined_config['network']['ipv4_address'], 
-                         configuration.defined_config['network']['ipv4_gateway'], 
-                         configuration.defined_config['network']['dns_servers'])
+    L = Logger()         
+    configuration = LiveHouseBrickConfig("/media/boot/config.ini", L)
+
+    # set hostname
+    output = set_hostname(configuration.defined_config['system']['hostname'])
+    L.log(repr(output))
+
+    interface = 'eth0'
+
+    # set ip
+    if configuration.defined_config['network']['ipv4_method'] == 'dhcp':
+        output = set_interface_dhcp(interface)
+        for x in output:
+            L.log(repr(x)) 
+    elif configuration.defined_config['network']['ipv4_method'] == 'static':
+        output = set_interface_static(interface, 
+                             configuration.defined_config['network']['ipv4_address'], 
+                             configuration.defined_config['network']['ipv4_gateway'], 
+                             configuration.defined_config['network']['dns_servers'])
+        for x in output:
+            L.log(repr(x))
+
+    output = flap_interface(interface)
     for x in output:
         L.log(repr(x))
-        
-output = flap_interface(interface)
-for x in output:
-    L.log(repr(x))
 
-output = set_timezone(configuration.defined_config['system']['timezone'])
-L.log(repr(output))
+    output = set_timezone(configuration.defined_config['system']['timezone'])
+    L.log(repr(output))
 
-output = write_ntp_config(configuration.defined_config['network']['ntp_servers'])
-L.log(repr(output))
-        
-# todo - start heartbeat LED
-# todo: do the heartbeat stuff in rc.local
-
+    output = write_ntp_config(configuration.defined_config['network']['ntp_servers'])
+    L.log(repr(output))
