@@ -61,10 +61,8 @@ class LiveHouseBrickConfig(object):
         self.default_config['system']['timezone'] = "Australia/Perth"
         self.default_config['network'] = {}
         self.default_config['network']['ipv4_method'] = "dhcp"
-        self.default_config['network']['ipv4_address'] = "0.0.0.0"
-        self.default_config['network']['ipv4_netmask'] = "0.0.0.0"
+        self.default_config['network']['ipv4_address'] = "0.0.0.0/0"
         self.default_config['network']['ipv4_gateway'] = "0.0.0.0"
-        self.default_config['network']['dns_method'] = "dhcp"
         self.default_config['network']['dns_servers'] = '8.8.8.8, 8.8.4.4'
         self.default_config['network']['ntp_servers'] = '0.pool.ntp.org, 1.pool.ntp.org, 2.pool.ntp.org, 3.pool.ntp.org'
         self.logger.log("Configuration defaults:")
@@ -111,10 +109,8 @@ class LiveHouseBrickConfig(object):
 
         elif section == 'network':
             if   item == 'ipv4_method':  return self.check_valid_ipv4_method
-            elif item == 'ipv4_address': return self.check_valid_ipv4_address
-            elif item == 'ipv4_netmask': return self.check_valid_ipv4_netmask
+            elif item == 'ipv4_address': return self.check_valid_ipv4_interface
             elif item == 'ipv4_gateway': return self.check_valid_ipv4_address
-            elif item == 'dns_method': return self.check_valid_ipv4_method
             elif item == 'dns_servers': return self.check_valid_dns_servers
             elif item == 'ntp_servers': return self.check_valid_ntp_servers
 
@@ -156,14 +152,61 @@ class LiveHouseBrickConfig(object):
         return True
 
     
-    def check_valid_ipv4_netmask(self, netmask):
+    def check_valid_ipv4_interface(self, interface):
         try:
-            x = ipaddress.IPv4Interface("%s/%s" % ('0.0.0.0', netmask))
+            x = ipaddress.IPv4Interface(interface)
         except ipaddress.NetmaskValueError as err:
+            self.err = err
+            return False
+        except ipaddress.AddressValueError as err:
             self.err = err
             return False
         return True
 
+
+
+
+def get_connection_name(interface):
+    nmcli_output = subprocess.run(["nmcli", "-terse", "-fields=DEVICE,CONNECTION", "device", "status"], stdout=subprocess.PIPE)
+    nmcli_output = nmcli_output.stdout.decode("utf-8")
+    nmcli_output = nmcli_output.split('\n')
+    for x in nmcli_output:
+        tmp = x.split(':')
+        if len(tmp) == 2:
+            i,c = tmp
+            if i == interface:
+                return c
+    return None
+
+
+def set_interface_dhcp(interface):
+    c = get_connection_name(interface)
+    output = list()
+    output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.method", "auto"], stdout=subprocess.PIPE))
+    output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.dns", ""], stdout=subprocess.PIPE))
+    output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.dns-search", ""], stdout=subprocess.PIPE))
+    output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.addresses", ""], stdout=subprocess.PIPE))
+    output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.gateway", ""], stdout=subprocess.PIPE))
+    print(nmcli_output)
+
+    
+def set_interface_static(interface, address, gateway, dns-servers, dns-search):
+    c = get_connection_name(interface)
+    output = list()
+    output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.method", "manual"], stdout=subprocess.PIPE))
+    output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.dns", ' '.join(dns-servers)], stdout=subprocess.PIPE))
+    output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.dns-search", ' '.join(dns-search)], stdout=subprocess.PIPE))
+    output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.addresses", address], stdout=subprocess.PIPE))
+    output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.gateway", gateway], stdout=subprocess.PIPE))
+    return output
+    
+    
+def set_hostname(hostname):
+    return subprocess.run(["nmcli", "-terse", "general", "hostname", hostname], stdout=subprocess.PIPE)
+    
+
+    
+    
 
 # todo - stop heartbeat LED
 L = Logger()         
