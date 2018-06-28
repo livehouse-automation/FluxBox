@@ -211,6 +211,8 @@ def set_hostname(hostname):
 # todo - stop heartbeat LED
 L = Logger()         
 configuration = LiveHouseBrickConfig("/media/boot/config.ini", L)
+output = set_hostname(configuration.defined_config['system']['hostname'])
+L.log(repr(output))
 # todo - start heartbeat LED
 # todo: do the heartbeat stuff in rc.local
 
