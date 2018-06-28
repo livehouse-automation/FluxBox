@@ -224,7 +224,23 @@ def set_hostname(hostname):
 def set_timezone(tz):
     return subprocess.run(["timedatectl", "set-timezone", tz], stdout=subprocess.PIPE)
 
-    
+
+def write_ntp_config(ntp_servers):
+    with open('/etc/ntp.conf') as f:
+        f.write("driftfile /var/lib/ntp/ntp.drift\n")
+        f.write("leapfile /usr/share/zoneinfo/leap-seconds.list\n")
+        f.write("statistics loopstats peerstats clockstats\n")
+        f.write("filegen loopstats file loopstats type day enable\n")
+        f.write("filegen peerstats file peerstats type day enable\n")
+        f.write("filegen clockstats file clockstats type day enable\n")
+        for s in ntp_servers.replace(' ','').split(','):
+            f.write("pool %s iburst\n" % (s))
+        f.write("restrict -4 default kod notrap nomodify nopeer noquery limited\n")
+        f.write("restrict -6 default kod notrap nomodify nopeer noquery limited\n")
+        f.write("restrict 127.0.0.1\n")
+        f.write("restrict ::1\n")
+        f.write("restrict source notrap nomodify noquery\n")
+    return subprocess.run(["service", "ntp", "restart"], stdout=subprocess.PIPE)
     
 
 # todo - stop heartbeat LED
@@ -255,6 +271,9 @@ for x in output:
     L.log(repr(x))
 
 output = set_timezone(configuration.defined_config['system']['timezone'])
+L.log(repr(output))
+
+output = write_ntp_config(configuration.defined_config['network']['ntp_servers'])
 L.log(repr(output))
         
 # todo - start heartbeat LED
