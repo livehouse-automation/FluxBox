@@ -5,6 +5,7 @@ import io
 import sys
 import subprocess
 import os
+import datetime
 
 
 
@@ -14,6 +15,7 @@ class Logger(object):
         self.logfile = open('/media/boot/config.log', 'w')
         pass
     def log(self, text):
+        text = "%s: %s" % (datetime.datetime.now(), text)
         print(text)
         self.logfile.write("%s\n" % (text))
     def log_info(self,text):
