@@ -212,8 +212,25 @@ def set_hostname(hostname):
 # todo - stop heartbeat LED
 L = Logger()         
 configuration = LiveHouseBrickConfig("/media/boot/config.ini", L)
+
+# set hostname
 output = set_hostname(configuration.defined_config['system']['hostname'])
 L.log(repr(output))
+
+interface = 'eth0'
+
+# set ip
+if configuration.defined_config['network']['ipv4_method'] == 'dhcp':
+    output = set_interface_dhcp(interface)
+    L.log(repr(output))
+elif configuration.defined_config['network']['ipv4_method'] == 'static':
+    output = set_interface_static(interface, 
+                         configuration.defined_config['network']['ipv4_address'], 
+                         configuration.defined_config['network']['ipv4_gateway'], 
+                         configuration.defined_config['network']['dns_servers'], 
+                         configuration.defined_config['network']['dns_search'])
+    L.log(repr(output))
+        
 # todo - start heartbeat LED
 # todo: do the heartbeat stuff in rc.local
 
