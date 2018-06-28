@@ -106,8 +106,8 @@ class LiveHouseBrickConfig(object):
     def get_check_validity_function(self, section, item):
 
         if section == 'system':
-            if item == 'hostname':
-                return self.check_valid_hostname
+            if   item == 'hostname': return self.check_valid_hostname
+            elif item == 'timezone': return self.check_valid_timezone
 
         elif section == 'network':
             if   item == 'ipv4_method':  return self.check_valid_ipv4_method
@@ -162,6 +162,13 @@ class LiveHouseBrickConfig(object):
             return False
         except ipaddress.AddressValueError as err:
             self.err = err
+            return False
+        return True
+    
+    
+    def check_valid_timezone(self, tz):
+        if not os.path.exists(os.path.join('/usr/share/zoneinfo', tz):
+            self.err = "timezone not valid"
             return False
         return True
 
