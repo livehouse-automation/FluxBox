@@ -205,7 +205,6 @@ def set_interface_static(interface, address, gateway, dns_servers, dns_search):
     output = list()
     output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.method", "manual"], stdout=subprocess.PIPE))
     output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.dns", ' '.join(dns_servers)], stdout=subprocess.PIPE))
-    output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.dns-search", ' '.join(dns_search)], stdout=subprocess.PIPE))
     output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.addresses", address], stdout=subprocess.PIPE))
     output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.gateway", gateway], stdout=subprocess.PIPE))
     return output
@@ -237,8 +236,7 @@ elif configuration.defined_config['network']['ipv4_method'] == 'static':
     output = set_interface_static(interface, 
                          configuration.defined_config['network']['ipv4_address'], 
                          configuration.defined_config['network']['ipv4_gateway'], 
-                         configuration.defined_config['network']['dns_servers'], 
-                         configuration.defined_config['network']['dns_search'])
+                         configuration.defined_config['network']['dns_servers'])
     for x in output:
         L.log(repr(x))
         
