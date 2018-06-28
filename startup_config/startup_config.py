@@ -194,7 +194,6 @@ def set_interface_dhcp(interface):
     output = list()
     output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.method", "auto"], stdout=subprocess.PIPE))
     output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.dns", ""], stdout=subprocess.PIPE))
-    output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.dns-search", ""], stdout=subprocess.PIPE))
     output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.addresses", ""], stdout=subprocess.PIPE))
     output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.gateway", ""], stdout=subprocess.PIPE))
     return output
