@@ -167,7 +167,7 @@ class LiveHouseBrickConfig(object):
     
     
     def check_valid_timezone(self, tz):
-        if not os.path.exists(os.path.join('/usr/share/zoneinfo', tz):
+        if not os.path.exists(os.path.join('/usr/share/zoneinfo', tz)):
             self.err = "timezone not valid"
             return False
         return True
