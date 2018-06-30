@@ -22,6 +22,10 @@ docker run \
   --rm \
   --name influxdb \
   --network livehouse \
+  -p 8086:8086 \
+  -p 8083:8083 \
+  -p 2003:2003 \
+  -p 25826:25826 \
   -v /storage/influxdb/data:/var/lib/influxdb \
   influxdb:latest
 
