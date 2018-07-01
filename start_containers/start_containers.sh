@@ -5,15 +5,12 @@ docker network create livehouse
 
 # pull latest container images
 docker pull influxdb:latest
-docker pull telegraf:latest
 docker pull livehouseautomation/veraflux-grafana:latest
 
 # stop running containers
 docker container rename influxdb influxdb_old
-docker container rename telegraf telegraf_old
 docker container rename grafana grafana_old
 docker stop influxdb
-docker stop telegraf
 docker stop grafana
 
 # recreate influxdb container
