@@ -1,17 +1,5 @@
 #!/bin/bash
 
-# copy original image to new image
-cp -v /imagefiles/original.img.xz /imagefiles/patched.img.xz
-
-# extract image
-xz -dv /imagesfiles/patched.img.xz
-
-# setup loopback
-losetup -P /dev/loop0 /imagefiles/patched.img
-mkdir -p /imageroot/media/boot
-mount /dev/loop0p2 /imageroot
-mount /dev/loop0p1 /imageroot/media/boot
-
 # Get FluxBox stuff
 mkdir /src
 cd /src
