@@ -9,6 +9,11 @@ git clone -b develop https://github.com/livehouse-automation/FluxBox.git
 # alias for running commands in the image
 alias run_in_image='proot -q qemu-arm -r /imageroot'
 
+# Sort out dns in container for this process
+echo nameserver 8.8.8.8 > /imageroot/etc/resolv.conf
+echo nameserver 8.8.4.4 >> /imageroot/etc/resolv.conf
+
+
 # refresh apt inside image
 run_in_image apt-get update -y
 
