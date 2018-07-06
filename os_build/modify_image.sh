@@ -12,7 +12,7 @@ cp -v $IMAGEFILE $IMAGEFILE.original
 #xz -d $IMAGEFILE
 
 # setup loopback
-LOOPBACKDEV=`losetup -P --show -f /path/to/image`
+LOOPBACKDEV=`losetup -P --show -f $IMAGEFILE`
 # GRAB OUTPUT AS THIS IS LOOPBACK
 
 # mount image
