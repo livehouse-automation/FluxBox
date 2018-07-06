@@ -64,6 +64,8 @@ rmdir ./imagerootfs
 # Clean up loopback
 losetup -v -d ${LOOPBACKDEV}
 
-# Compress image
-xz -vzT4 $IMAGEFILE
+# Rename
+mv -v $IMAGEFILE livehouseautomation-$IMAGEFILE
 
+# Compress image
+xz -vzT4 livehouseautomation-$IMAGEFILE
