@@ -1,6 +1,6 @@
 #!/bin/bash -x
 
-IMAGEFILE="./"
+IMAGEFILE="./ubuntu-18.04-4.14-minimal-odroid-xu4-20180531.img"
 
 #get image
 #wget http://path/to/image
@@ -9,7 +9,7 @@ IMAGEFILE="./"
 cp -v $IMAGEFILE $IMAGEFILE.original
 
 # extract image
-xz -d $IMAGEFILE
+#xz -d $IMAGEFILE
 
 # setup loopback
 LOOPBACKDEV=`losetup -P --show -f /path/to/image`
