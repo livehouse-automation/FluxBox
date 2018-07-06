@@ -23,7 +23,13 @@ docker run \
   -p 8083:8083 \
   -p 2003:2003 \
   -p 25826:25826 \
+  -e INFLUXDB_DATA_WAL_FSYNC_DELAY=1s \
+  -e INFLUXDB_DATA_MAX_CONCURRENT_COMPACTIONS=1 \
+  -e INFLUXDB_COORDINATOR_QUERY_TIMEOUT=60s \
+  -e INFLUXDB_COORDINATOR_LOG_QUERIES_AFTER=30s \
+  -e INFLUXDB_RETENTION_CHECK_INTERVAL=3600m0s \
   -v /storage/influxdb/data:/var/lib/influxdb \
+  -v /storage/influxdb/backup:/backup \
   influxdb:latest
 
 # recreate grafana container
