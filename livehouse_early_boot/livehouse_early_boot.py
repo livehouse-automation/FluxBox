@@ -185,18 +185,18 @@ class LiveHouseBrickConfig(object):
 
 def set_interface_dhcp(interface, interface_file):
     with open(interface_file, 'w') as f:
-        f.write("#")
-        f.write("# THIS FILE AUTOMATICALLY WRITTEN ON BOOT")
-        f.write("#")
+        f.write("#\n")
+        f.write("# THIS FILE AUTOMATICALLY WRITTEN ON BOOT\n")
+        f.write("#\n")
         f.write("auto %s\n" % (interface))
         f.write("iface %s inet dhcp\n" % (interface))
 
     
 def set_interface_static(interface, interface_file, address, netmask, gateway, dns_servers):
     with open(interface_file, 'w') as f:
-        f.write("#")
-        f.write("# THIS FILE AUTOMATICALLY WRITTEN ON BOOT")
-        f.write("#")
+        f.write("#\n")
+        f.write("# THIS FILE AUTOMATICALLY WRITTEN ON BOOT\n")
+        f.write("#\n")
         f.write("auto %s\n" % (interface))
         f.write("iface %s inet static\n" % (interface))
         f.write("    address %s\n" % (address))
@@ -222,9 +222,9 @@ def set_timezone(tz):
 def write_ntp_config(ntp_servers, ntp_configfile):
     #output = list()
     with open(ntp_configfile, 'w') as f:
-        f.write("#")
-        f.write("# THIS FILE AUTOMATICALLY WRITTEN ON BOOT")
-        f.write("#")
+        f.write("#\n")
+        f.write("# THIS FILE AUTOMATICALLY WRITTEN ON BOOT\n")
+        f.write("#\n")
         f.write("driftfile /var/lib/ntp/ntp.drift\n")
         f.write("leapfile /usr/share/zoneinfo/leap-seconds.list\n")
         f.write("statistics loopstats peerstats clockstats\n")
