@@ -13,7 +13,8 @@
 
 ### [network] section
  * ```ipv4_method``` can be set to either ```static``` or ```dhcp```
- * ```ipv4_address``` only needs to be set if ```ipv4_method``` is set to ```static```. The IP address of this appliance. Syntax is IP/maskbits eg: ```192.168.69.69/24```
+ * ```ipv4_address``` only needs to be set if ```ipv4_method``` is set to ```static```. The IP address of this appliance. eg: ```192.168.69.69```
+ * ```ipv4_netmask``` only needs to be set if ```ipv4_method``` is set to ```static```. The netmask of this appliance. eg: ```255.255.255.0```
  * ```ipv4_gateway``` only needs to be set if ```ipv4_method``` is set to ```static```. The IP address of the default gateway. eg: ```192.168.69.1```
  * ```dns_servers``` only needs to be set if ```ipv4_method``` is set to ```static```. Comma separated list of DNS server IP addresses. eg: ```8.8.8.8,8.8.4.4```
  * ```ntp_servers``` Comma separated list of NTP server FQDNs or IPs. eg: ```0.pool.ntp.org,1.pool.ntp.org,2.pool.ntp.org,3.pool.ntp.org```

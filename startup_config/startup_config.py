@@ -6,13 +6,14 @@ import sys
 import subprocess
 import os
 import datetime
+import argparse
 
 
 
 
 class Logger(object):
-    def __init__(self):
-        self.logfile = open('/media/boot/config.log', 'w')
+    def __init__(self, logfile):
+        self.logfile = open(logfile, 'w')
         pass
     def log(self, text):
         text = "%s: %s" % (datetime.datetime.now(), text)
@@ -65,12 +66,13 @@ class LiveHouseBrickConfig(object):
         self.default_config['system'] = {}
         self.default_config['system']['hostname'] = "livehousebrick"
         self.default_config['system']['timezone'] = "Australia/Perth"
+        self.default_config['system']['ntp_servers'] = '0.pool.ntp.org, 1.pool.ntp.org, 2.pool.ntp.org, 3.pool.ntp.org'
         self.default_config['network'] = {}
         self.default_config['network']['ipv4_method'] = "dhcp"
         self.default_config['network']['ipv4_address'] = "0.0.0.0/0"
+        self.default_config['network']['ipv4_netmask'] = "0.0.0.0"
         self.default_config['network']['ipv4_gateway'] = "0.0.0.0"
         self.default_config['network']['dns_servers'] = '8.8.8.8, 8.8.4.4'
-        self.default_config['network']['ntp_servers'] = '0.pool.ntp.org, 1.pool.ntp.org, 2.pool.ntp.org, 3.pool.ntp.org'
         self.logger.log("Configuration defaults:")
         self.print_config(self.default_config)
 
@@ -113,13 +115,14 @@ class LiveHouseBrickConfig(object):
         if section == 'system':
             if   item == 'hostname': return self.check_valid_hostname
             elif item == 'timezone': return self.check_valid_timezone
+            elif item == 'ntp_servers': return self.check_valid_ntp_servers
 
         elif section == 'network':
             if   item == 'ipv4_method':  return self.check_valid_ipv4_method
-            elif item == 'ipv4_address': return self.check_valid_ipv4_interface
+            elif item == 'ipv4_address': return self.check_valid_ipv4_address
+            elif item == 'ipv4_netmask': return self.check_valid_ipv4_netmask
             elif item == 'ipv4_gateway': return self.check_valid_ipv4_address
             elif item == 'dns_servers': return self.check_valid_dns_servers
-            elif item == 'ntp_servers': return self.check_valid_ntp_servers
 
             
     def check_valid_ntp_servers(self, serverlist):
@@ -159,7 +162,8 @@ class LiveHouseBrickConfig(object):
         return True
 
     
-    def check_valid_ipv4_interface(self, interface):
+    def check_valid_ipv4_netmask(self, netmask):
+        interface = "%s/%s" % (self.defined_config['network']['ipv4_address'], netmask)
         try:
             x = ipaddress.IPv4Interface(interface)
         except ipaddress.NetmaskValueError as err:
@@ -178,61 +182,39 @@ class LiveHouseBrickConfig(object):
         return True
 
 
-
-
-def get_connection_name(interface):
-    nmcli_output = subprocess.run(["nmcli", "-terse", "-fields=DEVICE,CONNECTION", "device", "status"], stdout=subprocess.PIPE)
-    nmcli_output = nmcli_output.stdout.decode("utf-8")
-    nmcli_output = nmcli_output.split('\n')
-    for x in nmcli_output:
-        tmp = x.split(':')
-        if len(tmp) == 2:
-            i,c = tmp
-            if i == interface:
-                return c
-    return None
-
-
 def set_interface_dhcp(interface):
-    c = get_connection_name(interface)
-    output = list()
-    output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.method", "auto"], stdout=subprocess.PIPE))
-    output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.dns", ""], stdout=subprocess.PIPE))
-    output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.addresses", ""], stdout=subprocess.PIPE))
-    output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.gateway", ""], stdout=subprocess.PIPE))
+    output = str()
+    output += "auto %s\n" % (interface)
+    output += "iface %s inet dhcp\n" % (interface)
     return output
 
     
-def set_interface_static(interface, address, gateway, dns_servers):
-    c = get_connection_name(interface)
-    output = list()
-    output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.dns", ' '.join(dns_servers.replace(' ','').split(','))], stdout=subprocess.PIPE))
-    output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.addresses", address], stdout=subprocess.PIPE))
-    output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.gateway", gateway], stdout=subprocess.PIPE))
-    output.append(subprocess.run(["nmcli", "-terse", "connection", "modify", c, "ipv4.method", "manual"], stdout=subprocess.PIPE))
-    return output
+def set_interface_static(interface, interface_file, address, netmask, gateway, dns_servers):
+    with open(interface_file, 'w') as f:
+        f.write("auto %s\n" % (interface))
+        f.write("iface %s inet static\n" % (interface))
+        f.write("    address %s\n" % (address))
+        f.write("    netmask %s\n" % (netmask))
+        f.write("    gateway %s\n" % (gateway))
+        for s in dns_servers.split(','):
+            s = s.strip()
+            f.write("    dns-nameserver %s\n" % (s))
 
-
-def flap_interface(interface):
-    c = get_connection_name(interface)
+    
+def set_hostname(hostname, hostname_file):
+    with open(hostname_file, 'w') as f:
+        f.write("%s\n" % (hostname))
     output = list()
-    output.append(subprocess.run(["nmcli", "-terse", "connection", "down", c], stdout=subprocess.PIPE))
-    output.append(subprocess.run(["nmcli", "-terse", "connection", "up", c], stdout=subprocess.PIPE))
+    output.append(subprocess.run(["hostname", hostname], stdout=subprocess.PIPE))
     return output
-    
-    
-def set_hostname(hostname):
-    return subprocess.run(["nmcli", "-terse", "general", "hostname", hostname], stdout=subprocess.PIPE)
 
 
 def set_timezone(tz):
     return subprocess.run(["timedatectl", "set-timezone", tz], stdout=subprocess.PIPE)
 
 
-def write_ntp_config(ntp_servers):
-    output = list()
-    output.append(subprocess.run(["service", "ntp", "stop"], stdout=subprocess.PIPE))
-    with open('/etc/ntp.conf', 'w') as f:
+def write_ntp_config(ntp_servers, ntp_configfile):
+    with open(ntp_configfile, 'w') as f:
         f.write("driftfile /var/lib/ntp/ntp.drift\n")
         f.write("leapfile /usr/share/zoneinfo/leap-seconds.list\n")
         f.write("statistics loopstats peerstats clockstats\n")
@@ -247,43 +229,46 @@ def write_ntp_config(ntp_servers):
         f.write("restrict 127.0.0.1\n")
         f.write("restrict ::1\n")
         f.write("restrict source notrap nomodify noquery\n")
-    output.append(subprocess.run(["service", "ntp", "start"], stdout=subprocess.PIPE))
-    return output
-    
+      
 
 
 
 if __name__ == "__main__":
 
-    L = Logger()         
-    configuration = LiveHouseBrickConfig("/media/boot/config.ini", L)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-c", "--configini", help="config.ini file [/media/boot/config.ini]", type=str, default="/media/boot/config.ini")
+    parser.add_argument("-i", "--interface_name", help="ethernet interface name [eth0]", type=str, default="eth0")
+    parser.add_argument("-e", "--interface_config_file", help="interface configuration file [/etc/network/interfaces.d/eth0]", type=str, default="/etc/network/interfaces.d/eth0")
+    parser.add_argument("-l", "--log_file", help="log file [/media/boot/config.log]", type=str, default="/media/boot/config.log")
+    parser.add_argument("-n", "--ntp_config_file", help="ntp config file [/etc/ntp.conf]", type=str, default="/etc/ntp.conf")
+    parser.add_argument("-o", "--hostname_file", help="hostname file [/etc/hostname]", type=str, default="/etc/hostname")
+    args = parser.parse_args()
+    print(repr(args))
+
+    L = Logger(args.log_file)         
+    configuration = LiveHouseBrickConfig(args.configini, L)
 
     # set hostname
-    output = set_hostname(configuration.defined_config['system']['hostname'])
+    output = set_hostname(configuration.defined_config['system']['hostname'], args.hostname_file)
     L.log(repr(output))
-
-    interface = 'eth0'
 
     # set ip
     if configuration.defined_config['network']['ipv4_method'] == 'dhcp':
-        output = set_interface_dhcp(interface)
+        output = set_interface_dhcp(args.interface_name, args.interface_config_file)
         for x in output:
             L.log(repr(x)) 
     elif configuration.defined_config['network']['ipv4_method'] == 'static':
-        output = set_interface_static(interface, 
-                             configuration.defined_config['network']['ipv4_address'], 
-                             configuration.defined_config['network']['ipv4_gateway'], 
-                             configuration.defined_config['network']['dns_servers'])
-        for x in output:
-            L.log(repr(x))
-
-    output = flap_interface(interface)
-    for x in output:
-        L.log(repr(x))
+        output = set_interface_static(args.interface_name,
+                                      args.interface_config_file,
+                                      configuration.defined_config['network']['ipv4_address'],
+                                      configuration.defined_config['network']['ipv4_netmask'],
+                                      configuration.defined_config['network']['ipv4_gateway'],
+                                      configuration.defined_config['network']['dns_servers'])
+        
 
     output = set_timezone(configuration.defined_config['system']['timezone'])
     L.log(repr(output))
 
-    output = write_ntp_config(configuration.defined_config['network']['ntp_servers'])
+    output = write_ntp_config(configuration.defined_config['network']['ntp_servers'], args.ntp_config_file)
     for x in output:
         L.log(repr(x))
