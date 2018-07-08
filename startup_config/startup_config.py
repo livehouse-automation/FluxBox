@@ -214,6 +214,7 @@ def set_timezone(tz):
 
 
 def write_ntp_config(ntp_servers, ntp_configfile):
+    output = list()
     with open(ntp_configfile, 'w') as f:
         f.write("driftfile /var/lib/ntp/ntp.drift\n")
         f.write("leapfile /usr/share/zoneinfo/leap-seconds.list\n")
@@ -229,6 +230,7 @@ def write_ntp_config(ntp_servers, ntp_configfile):
         f.write("restrict 127.0.0.1\n")
         f.write("restrict ::1\n")
         f.write("restrict source notrap nomodify noquery\n")
+    return output
       
 
 
