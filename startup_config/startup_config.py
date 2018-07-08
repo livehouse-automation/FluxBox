@@ -182,11 +182,10 @@ class LiveHouseBrickConfig(object):
         return True
 
 
-def set_interface_dhcp(interface):
-    output = str()
-    output += "auto %s\n" % (interface)
-    output += "iface %s inet dhcp\n" % (interface)
-    return output
+def set_interface_dhcp(interface, interface_file):
+    with open(interface_file, 'w') as f:
+        f.write("auto %s\n" % (interface))
+        f.write("iface %s inet dhcp\n" % (interface))
 
     
 def set_interface_static(interface, interface_file, address, netmask, gateway, dns_servers):
@@ -257,8 +256,7 @@ if __name__ == "__main__":
     # set ip
     if configuration.defined_config['network']['ipv4_method'] == 'dhcp':
         output = set_interface_dhcp(args.interface_name, args.interface_config_file)
-        for x in output:
-            L.log(repr(x)) 
+
     elif configuration.defined_config['network']['ipv4_method'] == 'static':
         output = set_interface_static(args.interface_name,
                                       args.interface_config_file,
@@ -266,7 +264,10 @@ if __name__ == "__main__":
                                       configuration.defined_config['network']['ipv4_netmask'],
                                       configuration.defined_config['network']['ipv4_gateway'],
                                       configuration.defined_config['network']['dns_servers'])
-        
+
+    L.log("Interface configuration file '%s' contents:" %(args.interface_config_file))
+    with open(args.interface_config_file, 'r') as f:
+        L.log(f.read())
 
     output = set_timezone(configuration.defined_config['system']['timezone'])
     L.log(repr(output))
