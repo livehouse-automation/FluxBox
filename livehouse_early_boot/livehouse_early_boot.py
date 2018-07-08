@@ -16,7 +16,6 @@ import argparse
 class Logger(object):
     def __init__(self, logfile):
         self.logfile = open(logfile, 'w')
-        pass
     def log(self, text):
         text = "%s: %s" % (datetime.datetime.now(), text)
         print(text)
@@ -186,12 +185,18 @@ class LiveHouseBrickConfig(object):
 
 def set_interface_dhcp(interface, interface_file):
     with open(interface_file, 'w') as f:
+        f.write("#")
+        f.write("# THIS FILE AUTOMATICALLY WRITTEN ON BOOT")
+        f.write("#")
         f.write("auto %s\n" % (interface))
         f.write("iface %s inet dhcp\n" % (interface))
 
     
 def set_interface_static(interface, interface_file, address, netmask, gateway, dns_servers):
     with open(interface_file, 'w') as f:
+        f.write("#")
+        f.write("# THIS FILE AUTOMATICALLY WRITTEN ON BOOT")
+        f.write("#")
         f.write("auto %s\n" % (interface))
         f.write("iface %s inet static\n" % (interface))
         f.write("    address %s\n" % (address))
@@ -215,8 +220,11 @@ def set_timezone(tz):
 
 
 def write_ntp_config(ntp_servers, ntp_configfile):
-    output = list()
+    #output = list()
     with open(ntp_configfile, 'w') as f:
+        f.write("#")
+        f.write("# THIS FILE AUTOMATICALLY WRITTEN ON BOOT")
+        f.write("#")
         f.write("driftfile /var/lib/ntp/ntp.drift\n")
         f.write("leapfile /usr/share/zoneinfo/leap-seconds.list\n")
         f.write("statistics loopstats peerstats clockstats\n")
@@ -225,13 +233,13 @@ def write_ntp_config(ntp_servers, ntp_configfile):
         f.write("filegen clockstats file clockstats type day enable\n")
         for s in ntp_servers.replace(' ','').split(','):
             f.write("pool %s iburst\n" % (s))
-            output.append(subprocess.run(["ntpdate", s], stdout=subprocess.PIPE))
+            #output.append(subprocess.run(["ntpdate", s], stdout=subprocess.PIPE))
         f.write("restrict -4 default kod notrap nomodify nopeer noquery limited\n")
         f.write("restrict -6 default kod notrap nomodify nopeer noquery limited\n")
         f.write("restrict 127.0.0.1\n")
         f.write("restrict ::1\n")
         f.write("restrict source notrap nomodify noquery\n")
-    return output
+    #return output
       
 
 
@@ -245,7 +253,6 @@ if __name__ == "__main__":
     parser.add_argument("-l", "--log_file", help="log file [/media/boot/config.log]", type=str, default="/media/boot/config.log")
     parser.add_argument("-n", "--ntp_config_file", help="ntp config file [/etc/ntp.conf]", type=str, default="/etc/ntp.conf")
     parser.add_argument("-o", "--hostname_file", help="hostname file [/etc/hostname]", type=str, default="/etc/hostname")
-    parser.add_argument("action", help="action (start, stop, restart, etc). IGNORED.", type=str, default="ignored")
     args = parser.parse_args()
     print(repr(args))
 
@@ -281,8 +288,6 @@ if __name__ == "__main__":
     L.log(repr(output))
 
     output = write_ntp_config(configuration.defined_config['system']['ntp_servers'], args.ntp_config_file)
-    for x in output:
-        L.log(repr(x))
 
     L.log("NTP configuration file '%s' contents:" %(args.ntp_config_file))
     with open(args.ntp_config_file, 'r') as f:

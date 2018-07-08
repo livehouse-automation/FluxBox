@@ -65,9 +65,10 @@ apt-get install -y git-sh
 apt-get install -y curl net-tools
 
 # Get FluxBox stuff
-mkdir /src
-cd /src
+mkdir -p /opt/livehouse/
+cd /opt/livehouse/
 git clone -b develop https://github.com/livehouse-automation/FluxBox.git
+cp -v ./FluxBox/livehouse_early_boot/config.ini /media/boot/
 # TODO ^^^^ remove develop branch when ready
 
 # Hard Drive Disk Parking Safely
@@ -97,19 +98,13 @@ cat << EOF > /etc/telegraf/telegraf.d/influxdb_output.conf
   database = "livehousebrick"
 EOF
 
-# Copy scripts
-mkdir -p /opt/livehouse/scripts
-cp -v /src/FluxBox/start_containers/start_containers.sh /opt/livehouse/scripts
-cp -v /src/FluxBox/startup_config/startup_config.py /opt/livehouse/scripts
-cp -v /src/FluxBox/startup_config/config.ini /media/boot/
+# Apply config from SD card boot partition /config.ini and log to /config.log
+
 
 # Setup startup script
 cp -v /etc/rc.local /etc/rc.local.original
 grep -v 'exit 0' /etc/rc.local.original > /etc/rc.local
 cat << EOF >> /etc/rc.local
-
-# Apply config from SD card boot partition /config.ini and log to /config.log
-python3 /opt/livehouse/scripts/startup_config.py
 
 # Pull latest docker containers and start them
 bash /opt/livehouse/scripts/start_containers.sh &>> /var/log/start_containers.log
@@ -234,18 +229,17 @@ setenv bootargs ${bootargs} 3
 # display bootargs
 echo "Boot args:"
 echo ${bootargs}
-sleep 2
 
 # Boot the board
 bootz 0x40008000 0x42000000 0x44000000
 EOF
 
 # change boot orders
-mv -v S11bootmisc.sh S12bootmisc.sh
-mv -v S10mountnfs-bootclean.sh S11mountnfs-bootclean.sh
-mv -v S09mountnfs.sh S10mountnfs.sh
-mv -v S09mountall-bootclean.sh S10mountall-bootclean.sh 
-mv -v S08networking S09networking
+#mv -v S11bootmisc.sh S12bootmisc.sh
+#mv -v S10mountnfs-bootclean.sh S11mountnfs-bootclean.sh
+#mv -v S09mountnfs.sh S10mountnfs.sh
+#mv -v S09mountall-bootclean.sh S10mountall-bootclean.sh 
+#mv -v S08networking S09networking
 
 
 # FINAL STUFF
