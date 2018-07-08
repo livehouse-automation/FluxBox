@@ -253,6 +253,10 @@ if __name__ == "__main__":
     output = set_hostname(configuration.defined_config['system']['hostname'], args.hostname_file)
     L.log(repr(output))
 
+    L.log("hostname configuration file '%s' contents:" %(args.hostname_file))
+    with open(args.hostname_file, 'r') as f:
+        L.log(f.read())
+
     # set ip
     if configuration.defined_config['network']['ipv4_method'] == 'dhcp':
         output = set_interface_dhcp(args.interface_name, args.interface_config_file)
@@ -275,3 +279,7 @@ if __name__ == "__main__":
     output = write_ntp_config(configuration.defined_config['system']['ntp_servers'], args.ntp_config_file)
     for x in output:
         L.log(repr(x))
+
+    L.log("NTP configuration file '%s' contents:" %(args.ntp_config_file))
+    with open(args.ntp_config_file, 'r') as f:
+        L.log(f.read())
