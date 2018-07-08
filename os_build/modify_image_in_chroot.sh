@@ -99,7 +99,25 @@ cat << EOF > /etc/telegraf/telegraf.d/influxdb_output.conf
 EOF
 
 # Apply config from SD card boot partition /config.ini and log to /config.log
+cat << EOF >> /etc/systemd/system/livehouse-config.service
+[Unit]
+Description=LiveHouse config.ini applier
+Before=network-pre.target network-online.target network.target
+After=local-fs.target
+DefaultDependencies=no
 
+[Service]
+Type=oneshot
+ExecStart=/opt/livehouse/FluxBox/livehouse_early_boot/livehouse_early_boot.py
+TimeoutSec=0
+RemainAfterExit=yes
+StandardOutput=journal
+StandardError=journal+console
+
+[Install]
+WantedBy=network-pre.target
+EOF
+ln -s /etc/systemd/system/livehouse-config.service /etc/systemd/system/network-pre.target.wants/livehouse-config.service
 
 # Setup startup script
 cp -v /etc/rc.local /etc/rc.local.original
@@ -234,15 +252,12 @@ echo ${bootargs}
 bootz 0x40008000 0x42000000 0x44000000
 EOF
 
-# change boot orders
-#mv -v S11bootmisc.sh S12bootmisc.sh
-#mv -v S10mountnfs-bootclean.sh S11mountnfs-bootclean.sh
-#mv -v S09mountnfs.sh S10mountnfs.sh
-#mv -v S09mountall-bootclean.sh S10mountall-bootclean.sh 
-#mv -v S08networking S09networking
-
 
 # FINAL STUFF
+
+# vaccum the journal
+journalctl --vacuum-size=4K
+# ^^^^ TODO: does this actually work???
 
 # revert resolv.conf
 mv -v /etc/resolv.conf.original /etc/resolv.conf
