@@ -245,6 +245,7 @@ if __name__ == "__main__":
     parser.add_argument("-l", "--log_file", help="log file [/media/boot/config.log]", type=str, default="/media/boot/config.log")
     parser.add_argument("-n", "--ntp_config_file", help="ntp config file [/etc/ntp.conf]", type=str, default="/etc/ntp.conf")
     parser.add_argument("-o", "--hostname_file", help="hostname file [/etc/hostname]", type=str, default="/etc/hostname")
+    parser.add_argument("action", help="action (start, stop, restart, etc). IGNORED.", type=str, default="ignored")
     args = parser.parse_args()
     print(repr(args))
 
