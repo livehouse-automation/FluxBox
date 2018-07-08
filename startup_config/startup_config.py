@@ -269,6 +269,6 @@ if __name__ == "__main__":
     output = set_timezone(configuration.defined_config['system']['timezone'])
     L.log(repr(output))
 
-    output = write_ntp_config(configuration.defined_config['network']['ntp_servers'], args.ntp_config_file)
+    output = write_ntp_config(configuration.defined_config['system']['ntp_servers'], args.ntp_config_file)
     for x in output:
         L.log(repr(x))
