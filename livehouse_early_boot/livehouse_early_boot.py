@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import configparser
 import re
 import ipaddress
@@ -246,7 +248,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     print(repr(args))
 
-    L = Logger(args.log_file)         
+    L = Logger(args.log_file)
+    L.log("Started early boot config")
     configuration = LiveHouseBrickConfig(args.configini, L)
 
     # set hostname
@@ -283,3 +286,5 @@ if __name__ == "__main__":
     L.log("NTP configuration file '%s' contents:" %(args.ntp_config_file))
     with open(args.ntp_config_file, 'r') as f:
         L.log(f.read())
+
+    L.log("Finished early boot config")
