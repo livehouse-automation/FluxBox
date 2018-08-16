@@ -1,6 +1,6 @@
 #!/bin/bash -x
 
-IMAGEFILE="./ubuntu-18.04-4.14-minimal-odroid-xu4-20180531.img"
+IMAGEFILE="./ubuntu-18.04.1-3.10-minimal-odroid-c1-20180802.img"
 
 #get image
 #wget http://path/to/image

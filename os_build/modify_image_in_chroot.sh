@@ -85,6 +85,61 @@ apt-get install -y ntp ntpdate
 curl -fsSL get.docker.com -o /tmp/get-docker.sh
 bash -x /tmp/get-docker.sh
 
+# Configure docker
+
+# create network
+docker network create livehouse
+
+# Autoheal
+docker run -d \
+  --name=always \
+  --restart=always \
+  -e AUTOHEAL_CONTAINER_LABEL=all \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  willfarrell/autoheal
+
+# Watchtower
+docker run -d \
+  --name watchtower \
+  --restart=always \
+  -e TZ="Australia/Perth" \
+  -v /etc/localtime:/etc/localtime:ro \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  v2tec/watchtower \
+  --cleanup
+
+# InfluxDB
+docker run \
+  -d \
+  --rm \
+  --name influxdb \
+  --network livehouse \
+  -p 8086:8086 \
+  -p 8083:8083 \
+  -p 2003:2003 \
+  -p 25826:25826 \
+  -e INFLUXDB_DATA_WAL_FSYNC_DELAY=1s \
+  -e INFLUXDB_DATA_MAX_CONCURRENT_COMPACTIONS=1 \
+  -e INFLUXDB_COORDINATOR_QUERY_TIMEOUT=60s \
+  -e INFLUXDB_COORDINATOR_LOG_QUERIES_AFTER=30s \
+  -e INFLUXDB_RETENTION_CHECK_INTERVAL=3600m0s \
+  -v /storage/influxdb/data:/var/lib/influxdb \
+  -v /storage/influxdb/backup:/backup \
+  influxdb:latest
+
+# Grafana
+mkdir -p /storage/grafana/data
+chown -R 472:472 /storage/grafana
+docker run \
+  -d \
+  --rm \
+  --name grafana \
+  --network livehouse \
+  -p 3000:3000 \
+  -v /storage/grafana/data:/var/lib/grafana \
+  livehouseautomation/veraflux-grafana:latest
+  
+
 # Install telegraf for monitoring underlying system
 curl -sL https://repos.influxdata.com/influxdb.key | apt-key add -
 source /etc/lsb-release
@@ -119,16 +174,16 @@ WantedBy=network-pre.target
 EOF
 ln -s /etc/systemd/system/livehouse-config.service /etc/systemd/system/network-pre.target.wants/livehouse-config.service
 
-# Setup startup script
-cp -v /etc/rc.local /etc/rc.local.original
-grep -v 'exit 0' /etc/rc.local.original > /etc/rc.local
-cat << EOF >> /etc/rc.local
+# # Setup startup script
+# cp -v /etc/rc.local /etc/rc.local.original
+# grep -v 'exit 0' /etc/rc.local.original > /etc/rc.local
+# cat << EOF >> /etc/rc.local
 
-# Pull latest docker containers and start them
-bash /opt/livehouse/scripts/start_containers.sh &>> /var/log/start_containers.log
+# # Pull latest docker containers and start them
+# bash /opt/livehouse/scripts/start_containers.sh &>> /var/log/start_containers.log
 
-exit 0
-EOF
+# exit 0
+# EOF
 
 # create /etc/profile.d/influx.sh
 cat << EOF > /etc/profile.d/livehouse_aliases.sh
